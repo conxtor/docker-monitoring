@@ -1,0 +1,55 @@
+version: '3.3'
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.37.0
+    command:
+      - "--storage.tsdb.path=/data/"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.external-url=https://prometheus.conxtor.com"
+      - "--web.enable-lifecycle"
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    networks:
+      - monitoring
+      - traefik
+    volumes: 
+      - /data/prometheus/config/:/etc/prometheus/
+      - /data/prometheus/db:/data
+    expose: 
+      - 9090
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.conxtor.com`)"
+      - "traefik.http.routers.prometheus.entrypoints=websecure"
+      - "traefik.http.routers.prometheus.tls.certresolver=acme"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+      - "traefik.http.middlewares.prometheus.basicauth.users=${PROMETHEUS_AUTH}"
+      - "traefik.http.routers.prometheus.middlewares=prometheus@docker"
+      - "traefik.docker.network=traefik"
+      
+  node-exporter:
+    image: prom/node-exporter:v1.3.1
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    expose:
+      - 9100
+    networks:
+      - monitoring
+
+      
+networks:
+  monitoring: 
+    name: monitoring
+    external: true
+  traefik:
+    name: traefik
+    external: true
