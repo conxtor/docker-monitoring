@@ -9,6 +9,7 @@ services:
       - "--web.external-url=https://prometheus.conxtor.com"
       - "--web.enable-lifecycle"
       - "--config.file=/etc/prometheus/prometheus.yml"
+    restart: unless-stopped
     networks:
       - monitoring
       - traefik
