@@ -57,6 +57,7 @@ services:
       - /dev/disk/:/dev/disk:ro
     networks:
       - monitoring
+      - traefik
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.cadvisor.rule=Host(`cadvisor.conxtor.com`)"
