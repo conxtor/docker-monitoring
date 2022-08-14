@@ -49,7 +49,7 @@ services:
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:${CADVISOR_VERSION}
     container_name: cadvisor
-    restart: unless_stopped
+    restart: unless-stopped
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
@@ -72,7 +72,7 @@ services:
   grafana:
     image: grafana/grafana:${GRAFANA_VERSION}
     container_name: grafana
-    restart: unless_stopped
+    restart: unless-stopped
     environment: 
       - GF_SECURITY_ADMIN_USERNAME=${GRAFANA_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
