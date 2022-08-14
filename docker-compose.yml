@@ -78,7 +78,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
     volumes:
       - /data/grafana/lib:/var/lib/grafana
-      - /data/grafana/etc:/etc/grafana
+      # - /data/grafana/etc:/etc/grafana
       - /data/grafana/log:/var/log/grafana
     networks:
       - monitoring
