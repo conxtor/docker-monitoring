@@ -74,7 +74,7 @@ services:
     container_name: grafana
     restart: unless-stopped
     environment: 
-      - GF_SECURITY_ADMIN_USERNAME=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
     volumes:
       - /data/grafana/lib:/var/lib/grafana
