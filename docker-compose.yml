@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
   prometheus:
-    image: prom/prometheus:v2.37.0
+    image: prom/prometheus:${PROMETHEUS_VERSION}
     command:
       - "--storage.tsdb.path=/data/"
       - "--storage.tsdb.retention.time=30d"
@@ -20,7 +20,7 @@ services:
       - 9090
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.prometheus.rule=Host(`prometheus.conxtor.com`)"
+      - "traefik.http.routers.prometheus.rule=Host(`${PROMETHEUS_HOSTNAME}`)"
       - "traefik.http.routers.prometheus.entrypoints=websecure"
       - "traefik.http.routers.prometheus.tls.certresolver=acme"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
@@ -29,7 +29,7 @@ services:
       - "traefik.docker.network=traefik"
       
   node-exporter:
-    image: prom/node-exporter:v1.3.1
+    image: prom/node-exporter:${NODEEXPORTER_VERSION}
     container_name: node-exporter
     restart: unless-stopped
     volumes:
@@ -47,8 +47,9 @@ services:
       - monitoring
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.45.0
+    image: gcr.io/cadvisor/cadvisor:${CADVISOR_VERSION}
     container_name: cadvisor
+    restart: unless_stopped
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
@@ -60,15 +61,36 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.cadvisor.rule=Host(`cadvisor.conxtor.com`)"
+      - "traefik.http.routers.cadvisor.rule=Host(`${CADVISOR_HOSTNAME}`)"
       - "traefik.http.routers.cadvisor.entrypoints=websecure"
       - "traefik.http.routers.cadvisor.tls.certresolver=acme"
       - "traefik.http.services.cadvisor.loadbalancer.server.port=8080"
       - "traefik.http.middlewares.cadvisor.basicauth.users=${PROMETHEUS_AUTH}"
       - "traefik.http.routers.cadvisor.middlewares=cadvisor@docker"
       - "traefik.docker.network=traefik"
-
-
+  
+  grafana:
+    image: grafana/grafana:${GRAFANA_VERSION}
+    container_name: grafana
+    restart: unless_stopped
+    environment: 
+      - GF_SECURITY_ADMIN_USERNAME=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - /data/grafana/lib:/var/lib/grafana
+      - /data/grafana/etc:/etc/grafana
+      - /data/grafana/log:/var/log/grafana
+    networks:
+      - monitoring
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`${GRAFANA_HOSTNAME}`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls.certresolver=acme"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      - "traefik.docker.network=traefik"
       
 networks:
   monitoring: 
